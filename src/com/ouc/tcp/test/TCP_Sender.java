@@ -13,7 +13,11 @@ public class TCP_Sender extends TCP_Sender_ADT {
 	
 	private TCP_PACKET tcpPack;	//待发送的TCP数据报
 	private volatile int flag = 0;
-	
+	private int expectNum = 0;
+	//设置计时器和超时重传
+	//private UDT_Timer timer = new UDT_Timer();
+	//private UDT_RetransTask retransTask = new UDT_RetransTask(client, tcpPack);
+
 	/*构造函数*/
 	public TCP_Sender() {
 		super();	//调用超类构造函数
@@ -35,10 +39,13 @@ public class TCP_Sender extends TCP_Sender_ADT {
 		//发送TCP数据报
 		udt_send(tcpPack);
 		flag = 0;
-		
+		expectNum = tcpPack.getTcpH().getTh_seq();
 		//等待ACK报文
 		//waitACK();
-		while (flag==0);
+		while (flag==0)
+		{
+			//timer.schedule(retransTask, 3000, 3000);
+		}
 	}
 	
 	@Override
@@ -82,11 +89,11 @@ public class TCP_Sender extends TCP_Sender_ADT {
 		}
 		else
 		{
-			//校验和错误，ACK损坏，看作NACK
+			//校验和错误，ACK损坏。
 			System.out.println("Receive Corrupted ACK, treat as NACK");
 			ackQueue.add(-1);
 		}
-	    System.out.println();	
+	    System.out.println();
 	   
 	    //处理ACK报文
 	    waitACK();
